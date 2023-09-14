@@ -4,14 +4,19 @@ import numpy as np
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
 from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
-from datetime import datetime
 import os
+from datetime import datetime
 from fpdf import FPDF
 import pandas as pd
+import base64
 
 # Create a folder to store PDF reports
 pdf_reports_folder = "pdf_reports"
 os.makedirs(pdf_reports_folder, exist_ok=True)
+
+# Create a folder to store temporary images
+temp_images_folder = "temp_images"
+os.makedirs(temp_images_folder, exist_ok=True)
 
 # Load model
 model = load_model('terrain__2023_09_13__11_52_06___Accuracy_0.9787.h5')
@@ -85,7 +90,6 @@ In military operations, sandy terrain presents unique challenges. The loose sand
     
     return explanations.get(terrain, "The terrain is classified as an unknown type.")
 
-
 def classify_image(img):
     img = img.resize((224, 224))
     
@@ -102,6 +106,13 @@ def classify_image(img):
     prediction_prob = prediction[0, label_index]
     return label_map[label_index], prediction_prob
 
+def get_binary_file_downloader_html(bin_file, file_label='File'):
+    with open(bin_file, 'rb') as f:
+        data = f.read()
+    bin_str = base64.b64encode(data).decode()
+    href = f'<a href="data:application/octet-stream;base64,{bin_str}" download="{os.path.basename(bin_file)}">{file_label}</a>'
+    return href
+
 def generate_pdf_report(df):
     pdf = PDF()
     pdf.add_page()
@@ -114,8 +125,8 @@ def generate_pdf_report(df):
         confidence = row['Confidence']
         explanation = generate_common_explanation(terrain)
 
-        # Save the image to a temporary file in PNG format
-        img_path = f"temp_image_{i}.png"
+        # Save the image to the temporary images folder in PNG format
+        img_path = os.path.join(temp_images_folder, f"temp_image_{i}.png")
         img = Image.open(row['Image'])
         img.save(img_path, format="PNG")
 
@@ -129,10 +140,10 @@ def generate_pdf_report(df):
         explanation = generate_common_explanation(terrain)
         pdf.multi_cell(0, 10, f"Terrain Explanation: {explanation}")
 
-    pdf_file_name = f"{pdf_reports_folder}/terrain_classification_report_{datetime.now().strftime('%Y%m%d%H%M%S')}.pdf"
-    pdf.output(pdf_file_name)
+    pdf_file_path = os.path.join(pdf_reports_folder, f"terrain_classification_report_{datetime.now().strftime('%Y%m%d%H%M%S')}.pdf")
+    pdf.output(pdf_file_path)
 
-    return pdf_file_name
+    return pdf_file_path
 
 def main():
     st.sidebar.title('Select Operation')
@@ -186,7 +197,8 @@ def main():
                 if st.sidebar.button("Download PDF Report"):
                     df = pd.DataFrame(bulk_results)
                     pdf_file_path = generate_pdf_report(df)
-                    st.sidebar.success(f"PDF report generated! [Download PDF]({pdf_file_path})")
+                    st.sidebar.markdown(get_binary_file_downloader_html(pdf_file_path, 'Download PDF'), unsafe_allow_html=True)
+                    st.sidebar.success("PDF report generated!")
 
 if __name__ == "__main__":
     main()
