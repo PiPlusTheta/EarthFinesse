@@ -34,6 +34,7 @@ EarthFinesse is a high-accuracy military terrain classifier powered by deep lear
 ## Usage
 
 ### Streamlit User Interface
+![image](https://github.com/PiPlusTheta/EarthFinesse/assets/68808227/b8f6b8e0-946e-43cb-96ef-0b794de5dd85)
 
 EarthFinesse comes with a user-friendly Streamlit interface for bulk image classification. Run the following command to start the application:
 
