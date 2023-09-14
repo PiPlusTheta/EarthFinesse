@@ -69,21 +69,13 @@ class PDF(FPDF):
 
 def generate_common_explanation(terrain):
     explanations = {
-        'Grassy': """The terrain is classified as grassy due to its abundant vegetation and distinct characteristics. It features a rich carpet of greenery, consisting of various types of grasses, shrubs, and other plants. This lush vegetation indicates a favorable environment for plant growth, typically found in grassy plains, meadows, or dense forests. Grassy terrain is known for its capacity to provide excellent cover for both military operations and wildlife, making it a valuable asset in various scenarios.
+        'Grassy': """The terrain is classified as grassy based on several visual cues. It displays a lush, green carpet of vegetation, including various types of grasses and other plants. The presence of dense vegetation indicates a favorable environment for plant growth, typically found in grassy plains, meadows, or forests. This terrain type offers good cover for camouflage and can provide sustenance for wildlife and troops in certain situations. The model recognized these characteristics and classified the terrain accordingly.""",
 
-In military operations, grassy terrain can be advantageous for several reasons. The dense vegetation offers natural concealment, allowing troops to use the environment as cover and remain hidden from adversaries. Additionally, it provides sustenance for wildlife and can be a reliable source of food for military personnel in certain situations. However, it may also pose challenges, such as limited visibility and obstacles for vehicle movement in densely vegetated areas. The model recognized these characteristics and classified the terrain accordingly.""",
+        'Marshy': """The terrain is identified as marshy due to its distinctive characteristics. It exhibits signs of wetland features, such as standing water, soft, muddy ground, and aquatic vegetation. Marshy terrain is often challenging to traverse and may impede movement. It can be found in coastal areas, riverbanks, or low-lying regions. The model recognized the presence of these wetland features, leading to the classification of marshy terrain. This type of terrain may pose challenges for military operations, as it can limit mobility and visibility while providing natural obstacles for defense.""",
 
-        'Marshy': """The terrain is identified as marshy based on its unique attributes, which include the presence of standing water, soft and muddy ground, and aquatic vegetation. Marshy terrain is often characterized by its challenging and waterlogged conditions, making it difficult to traverse. It is commonly found in coastal regions, riverbanks, or low-lying areas where water accumulates.
+        'Rocky': """The terrain classification as rocky is based on its rugged and uneven surface. It is characterized by the presence of large rocks, boulders, and irregular terrain. Rocky terrain is often challenging to navigate and may limit vehicle movement. It can be found in mountainous regions, rocky outcrops, or areas with substantial geological formations. The model identified these distinct features, leading to the classification of rocky terrain. While rocky terrain can offer natural defensive advantages, it can also impede troop movement and require specialized tactics for military operations.""",
 
-In military operations, marshy terrain presents several distinctive challenges. Its soft, muddy ground can bog down vehicles and hinder infantry movement, reducing mobility and speed. The presence of water bodies creates natural obstacles that require careful navigation. However, marshy terrain can also offer some advantages for defense due to its difficult terrain and limited mobility for adversaries. The model recognized these wetland features, leading to the classification of marshy terrain. This type of terrain may pose significant challenges for military operations, as it can limit mobility and visibility while providing natural obstacles for defense.""",
-
-        'Rocky': """The terrain classification as rocky is based on its rugged and uneven surface, which is characterized by the abundance of large rocks, boulders, and irregular features. Rocky terrain is often challenging to navigate and can significantly limit vehicle movement. It is typically found in mountainous regions, rocky outcrops, or areas with substantial geological formations.
-
-In a military context, rocky terrain presents a mixed set of advantages and disadvantages. The ruggedness of the terrain offers natural defensive advantages, as troops can find cover behind rocks and boulders. Additionally, the uneven surface can make it challenging for adversaries to advance. However, rocky terrain can also impede troop movement and require specialized tactics and equipment for military operations. The model identified these distinct features, leading to the classification of rocky terrain.""",
-
-        'Sandy': """The terrain classification as sandy is attributed to its predominant sandy composition, characterized by loose, granular soil and a lack of significant vegetation. Sandy terrain is commonly found in desert regions, coastal dunes, or arid environments.
-
-In military operations, sandy terrain presents unique challenges. The loose sand can impede vehicle movement and create conspicuous tracks, making it easier for adversaries to detect and track the movement of military units. Additionally, the lack of vegetation limits natural concealment options. However, sandy terrain can also offer some natural cover in the form of sand dunes and the ability to dig defensive positions in the soft soil. Military operations in sandy terrain often require specific equipment and strategies to address the unique challenges it poses. The model recognized these sandy characteristics, leading to the classification of sandy terrain.""",
+        'Sandy': """The terrain classification as sandy is attributed to its predominant sandy composition. Sandy terrain lacks significant vegetation and is characterized by loose, granular soil. It is commonly found in desert regions, coastal dunes, or arid environments. Sandy terrain can present challenges for both mobility and concealment, as the loose sand can impede vehicle movement and leave conspicuous tracks. The model recognized these sandy characteristics, leading to the classification of sandy terrain. Military operations in sandy terrain often require specific equipment and strategies to address the unique challenges it poses.""",
 
         # Add more terrain explanations here...
     }
@@ -147,58 +139,49 @@ def generate_pdf_report(df):
 
 def main():
     st.sidebar.title('Select Operation')
-    operation = st.sidebar.radio("Choose an operation:", ("File Upload",))
+    st.title('🌍 EarthFinesse - Military Terrain Classifier 🛡️')
+    st.header('Bulk Image Classification')
+    
+    st.sidebar.header('Mission Settings')
+    threshold = st.sidebar.slider('Confidence Threshold', 0.0, 1.0, 0.5, 0.01)
+    show_probabilities = st.sidebar.checkbox('Show Probabilities', False)
 
-    if operation == "File Upload":
-        st.title('🌍 EarthFinesse - Military Terrain Classifier 🛡️')
-        st.header('File Upload and Classification')
-        
-        st.sidebar.header('Mission Settings')
-        threshold = st.sidebar.slider('Confidence Threshold', 0.0, 1.0, 0.5, 0.01)
-        show_probabilities = st.sidebar.checkbox('Show Probabilities', False)
-        bulk_classification = st.sidebar.checkbox('Bulk Classification', False)
+    uploaded_files = st.file_uploader('Upload Reconnaissance Images', type=['png', 'jpg'], accept_multiple_files=True, help="Select one or more reconnaissance images.")
 
-        if bulk_classification:
-            st.sidebar.write("Upload multiple images to classify in bulk.")
-        else:
-            st.sidebar.write("Upload a single image for classification.")
+    if uploaded_files:
+        bulk_results = []
+        st.markdown("---")
 
-        uploaded_files = st.file_uploader('Upload Reconnaissance Images', type=['png', 'jpg'], accept_multiple_files=True, help="Select one or more reconnaissance images.")
+        for i, file in enumerate(uploaded_files):
+            st.subheader(f"Image {i+1}")
+            st.image(file, caption="Reconnaissance Image", use_column_width=True)
 
-        if uploaded_files:
-            bulk_results = []
-            st.markdown("---")
+            terrain, confidence = classify_image(Image.open(file))
 
-            for i, file in enumerate(uploaded_files):
-                st.subheader(f"Image {i+1}")
-                st.image(file, caption="Reconnaissance Image", use_column_width=True)
+            # Display the prediction and confidence score to the right of the image
+            st.write("### Prediction:")
+            st.write(f"🌲 Predicted Terrain Type: {terrain}")
+            st.write(f"🎯 Prediction Confidence: {confidence * 100:.2f}%")
 
-                terrain, confidence = classify_image(Image.open(file))
+            # Generate a common explanation for the terrain
+            explanation = generate_common_explanation(terrain)
+            st.write("### Terrain Explanation:")
+            st.write(explanation)
 
-                # Display the prediction and confidence score to the right of the image
-                st.write("### Prediction:")
-                st.write(f"🌲 Predicted Terrain Type: {terrain}")
-                st.write(f"🎯 Prediction Confidence: {confidence * 100:.2f}%")
+            bulk_results.append({
+                'Image': file,
+                'Terrain': terrain,
+                'Confidence': confidence
+            })
 
-                # Generate a common explanation for the terrain
-                explanation = generate_common_explanation(terrain)
-                st.write("### Terrain Explanation:")
-                st.write(explanation)
-
-                bulk_results.append({
-                    'Image': file,
-                    'Terrain': terrain,
-                    'Confidence': confidence
-                })
-
-            if bulk_results:
-                st.sidebar.markdown("---")
-                st.sidebar.header('Generate PDF Report')
-                if st.sidebar.button("Download PDF Report"):
-                    df = pd.DataFrame(bulk_results)
-                    pdf_file_path = generate_pdf_report(df)
-                    st.sidebar.markdown(get_binary_file_downloader_html(pdf_file_path, 'Download PDF'), unsafe_allow_html=True)
-                    st.sidebar.success("PDF report generated!")
+        if bulk_results:
+            st.sidebar.markdown("---")
+            st.sidebar.header('Generate PDF Report')
+            if st.sidebar.button("Download PDF Report"):
+                df = pd.DataFrame(bulk_results)
+                pdf_file_path = generate_pdf_report(df)
+                st.sidebar.markdown(get_binary_file_downloader_html(pdf_file_path, 'Download PDF'), unsafe_allow_html=True)
+                st.sidebar.success("PDF report generated!")
 
 if __name__ == "__main__":
     main()
