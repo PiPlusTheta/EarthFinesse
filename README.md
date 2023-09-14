@@ -1,118 +1,217 @@
-# EarthFinesse Terrain Recognition Engine
+# EarthFinesse: Military Terrain Classifier
 
-![Terrain Recognition](model_plot.png)
+![GitHub stars](https://img.shields.io/github/stars/PiPlusTheta/EarthFinesse)
+![GitHub forks](https://img.shields.io/github/forks/PiPlusTheta/EarthFinesse)
+![GitHub license](https://img.shields.io/github/license/PiPlusTheta/EarthFinesse)
 
-**EarthFinesse** is a state-of-the-art terrain recognition engine designed to classify images into four terrain categories: Grassy, Marshy, Rocky, and Sandy. This repository contains the code for training a deep learning model using TensorFlow and Keras to perform this classification task. The trained model can be used to recognize the terrain type in images with an exceptional accuracy of over 97%.
+EarthFinesse is a high-accuracy military terrain classifier powered by deep learning. It classifies terrain types such as Grassy, Marshy, Rocky, and Sandy with an accuracy of over 97.87%, setting a new benchmark in this domain. The model uses the MobileNetV2 architecture, optimized for efficient and accurate terrain classification.
 
-## Dataset
+## Table of Contents
 
-The EarthFinesse model was trained on an extensive dataset containing more than 45,100 images. Remarkably, each terrain category, including Grassy, Marshy, Rocky, and Sandy, was meticulously curated and comprised more than 10,000 images per class. This comprehensive dataset ensures that the model can generalize well and accurately classify a wide range of terrain types.
+- [Installation](#installation)
+- [Usage](#usage)
+- [Model Training](#model-training)
+- [Training Procedure](#training-procedure)
+- [Training Results](#training-results)
+- [Applications](#applications)
+- [Contributing](#contributing)
+- [License](#license)
 
-## Model
+## Installation
 
-The EarthFinesse Terrain Recognition Engine leverages transfer learning with the MobileNetV2 architecture, a powerful pre-trained neural network. During training, the model fine-tuned the pre-trained weights while utilizing data augmentation techniques to achieve optimal performance. The model was trained for 10 epochs, resulting in an impressive accuracy of over 97%, setting a new benchmark in this domain.
-
-## Files Needed for Training
-
-To train the EarthFinesse model, several files and directories are required:
-
-1. **Dataset Directory**: Organize your terrain image dataset into three directories: `train`, `val`, and `test`. Place the images for each terrain category in their respective subdirectories. The directory structure should resemble the following:
-
-   ```
-   - EarthFinesse
-     - Split
-       - train
-         - Grassy
-         - Marshy
-         - Rocky
-         - Sandy
-       - val
-         - Grassy
-         - Marshy
-         - Rocky
-         - Sandy
-       - test
-         - Grassy
-         - Marshy
-         - Rocky
-         - Sandy
-   ```
-
-   You can adapt the terrain categories to suit your specific use case.
-
-2. **`terrain_recognition.py`**: This Python script is responsible for training the model, preprocessing data, and evaluating its performance. You can adjust the model configuration, batch size, and other hyperparameters as needed.
-
-3. **Required Python Packages**: Ensure that you have the following Python packages installed:
-
-   - Python 3.x
-   - TensorFlow 2.x
-   - NumPy
-   - pandas
-   - Matplotlib
-   - scikit-learn
-
-   You can install these packages using pip:
+1. Clone the repository:
 
    ```bash
-   pip install tensorflow numpy pandas matplotlib scikit-learn
+   git clone https://github.com/PiPlusTheta/EarthFinesse.git
+   cd EarthFinesse
+	```
+2. Install the required Python packages:
+
+   ```bash
+   pip install -r requirements.txt
    ```
 
-## Training the Model
+## Usage
 
-The EarthFinesse Terrain Recognition Engine utilizes transfer learning with the MobileNetV2 architecture. You can tailor the training settings in the `terrain_recognition.py` script. To commence training, execute the following command:
+### Streamlit User Interface
+
+EarthFinesse comes with a user-friendly Streamlit interface for bulk image classification. Run the following command to start the application:
 
 ```bash
-python terrain_recognition.py
+streamlit run app.py
 ```
 
-The script will automatically partition your data into training, validation, and test sets and carry out 10 training epochs by default. You are encouraged to fine-tune these settings to align with your specific requirements.
+Upload reconnaissance images, and the model will classify them into terrain types with confidence scores.
 
-## Model Evaluation
+### Model Inference
 
-Upon training completion, the script provides a comprehensive evaluation of the model's performance. It showcases the achieved accuracy and generates a classification report that encompasses precision, recall, and F1-score metrics for each terrain category. The model's remarkable accuracy of over 97% underscores its outstanding recognition capabilities.
+To perform individual image classification using the trained model, use the following code snippet:
 
-## Model Saving
+```python
+# Load the model
+from tensorflow.keras.models import load_model
 
-The trained model is automatically stored in the repository directory, bearing a filename that encapsulates the date and time of training along with the final accuracy. This facilitates the reuse of the model for terrain recognition tasks without necessitating additional training.
+model = load_model('terrain__2023_09_13__11_52_06___Accuracy_0.9787.h5')
 
-## Streamlit Interface
+# Load and preprocess the image
+from tensorflow.keras.preprocessing import image
+from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
+import numpy as np
 
-In addition to the training and evaluation features, EarthFinesse incorporates a user-friendly Streamlit-based interface for bulk image classification. The `app.py` script enables you to upload multiple reconnaissance images and obtain predictions for each image's terrain type and confidence score.
+img_path = 'path_to_image.jpg'
+img = image.load_img(img_path, target_size=(224, 224))
+img = image.img_to_array(img)
+img = preprocess_input(img)
+img = np.expand_dims(img, axis=0)
 
-### How to Use the Streamlit Interface
+# Perform inference
+prediction = model.predict(img)
+label_index = np.argmax(prediction)
+terrain_label = {0: 'Grassy', 1: 'Marshy', 2: 'Rocky', 3: 'Sandy'}[label_index]
+confidence = prediction[0, label_index]
 
-1. **Install Required Packages**: First, make sure you've installed the necessary Python packages specified in the `app.py` script.
+print(f"Predicted Terrain: {terrain_label}")
+print(f"Confidence: {confidence * 100:.2f}%")
+```
 
-2. **Run the Streamlit App**: Execute the Streamlit app using the following command:
+## Model Training
 
-   ```bash
-   streamlit run app.py
-   ```
+### Dataset
 
-3. **Upload Reconnaissance Images**: You can upload one or more reconnaissance images.
+The model was trained on a dataset consisting of 45.1k images, with more than 10k images for each terrain class (Grassy, Marshy, Rocky, Sandy).
 
-4. **Configure Options**: Adjust the confidence threshold and choose whether to display prediction probabilities.
+![WhatsApp Image 2023-09-13 at 13 18 11](https://github.com/PiPlusTheta/EarthFinesse/assets/68808227/65ab6221-7657-4dca-99e2-87ed4eb9036f)
 
-5. **View Predictions**: EarthFinesse will provide predictions for each uploaded image, including the terrain type and confidence score.
+### Training Procedure
 
-6. **Generate PDF Reports**: You can generate PDF reports summarizing the predictions, explanations, and images for your reconnaissance data.
+#### Data Augmentation
 
-![EarthFinesse Interface](earthfinesse_interface.png)
+The training data is augmented using techniques like shear, zoom, and horizontal flip to increase diversity.
+
+#### MobileNetV2 Base Model
+
+https://production-media.paperswithcode.com/methods/Screen_Shot_2020-06-06_at_10.37.14_PM.png
+
+The MobileNetV2 architecture, pre-trained on ImageNet, is used as the base model for feature extraction. All base model layers are frozen to retain pre-trained knowledge.
+
+#### Custom Classification Head
+
+A custom classification head is added to the base model. It includes a global average pooling layer, a dense layer with 1024 units and ReLU activation, and a final dense layer with softmax activation for the number of classes (4 in this case).
+
+#### Compilation and Training
+
+The model is compiled with the Adam optimizer and categorical cross-entropy loss. It is then trained for 10 epochs.
+
+Here's how the model was trained:
+
+```python
+# Data augmentation and generators
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+
+train_datagen = ImageDataGenerator(
+    rescale=1./255,
+    shear_range=0.2,
+    zoom_range=0.2,
+    horizontal_flip=True
+)
+
+# ... (similar setup for test and validation generators)
+
+# MobileNetV2 base model
+from tensorflow.keras.applications import MobileNetV2
+
+base_model = MobileNetV2(weights="imagenet", include_top=False, input_shape=(224, 224, 3))
+
+# ... (freeze base_model layers and add custom classification head)
+
+# Compilation and training
+model.compile(optimizer="adam", loss="categorical_crossentropy", metrics=["accuracy"])
+
+history = model.fit(
+    train_generator,
+    steps_per_epoch=train_generator.samples // train_generator.batch_size,
+    validation_data=validation_generator,
+    validation_steps=validation_generator.samples // validation_generator.batch_size,
+    epochs=10
+)
+```
+
+### Training Results
+
+EarthFinesse achieved remarkable training results, setting a new benchmark in terrain classification:
+
+#### Final Accuracy
+
+The model achieved a stunning final accuracy of over 97.87%, showcasing its robust performance in classifying terrain types. This high accuracy can significantly enhance the effectiveness of military operations.
+
+#### Confusion Matrix
+![WhatsApp Image 2023-09-12 at 15 43 47](https://github.com/PiPlusTheta/EarthFinesse/assets/68808227/39b98fd1-ded6-4950-a06a-a76966865250)
+
+
+#### Training History
+
+| Epoch | Loss     | Accuracy | Validation Loss | Validation Accuracy |
+|-------|----------|----------|-----------------|---------------------|
+| 0     | 0.274514 | 0.897999 | 0.180294        | 0.934242            |
+| 1     | 0.151308 | 0.945084 | 0.208954        | 0.924763            |
+| 2     | 0.121970 | 0.956086 | 0.170471        | 0.941647            |
+| 3     | 0.101868 | 0.962776 | 0.154959        | 0.947571            |
+| 4     | 0.090680 | 0.967120 | 0.118927        | 0.961345            |
+| 5     | 0.080031 | 0.970640 | 0.128688        | 0.959271            |
+| 6     | 0.073431 | 0.974317 | 0.131562        | 0.957198            |
+| 7     | 0.071057 | 0.974508 | 0.123268        | 0.961197            |
+| 8     | 0.064471 | 0.977139 | 0.129367        | 0.958235            |
+| 9     | 0.059202 | 0.978661 | 0.114494        | 0.966380            |
+
+![WhatsApp Image 2023-09-13 at 13 03 33](https://github.com/PiPlusTheta/EarthFinesse/assets/68808227/d8d1f4fc-a2e2-4efd-84c4-1b03dc562955)
+
+
+These training metrics illustrate the model's progression over the training epochs, with both training and validation accuracy steadily increasing.
+
+## Applications
+
+The EarthFinesse Military Terrain Classifier has versatile applications across various domains, including but not limited to:
+
+#### 1. Military Operations
+
+   - **Tactical Planning:** The classifier assists military strategists in understanding the terrain composition, helping them plan tactical maneuvers effectively.
+   
+   - **Mission Customization:** Military missions can be customized based on the terrain type, optimizing resource allocation and troop deployment.
+   
+   - **Camouflage Strategies:** Knowledge of terrain types aids in developing appropriate camouflage strategies to blend in with the surroundings.
+   
+#### 2. Environmental Monitoring
+
+   - **Conservation Efforts:** Conservationists can utilize the classifier to monitor and protect specific ecosystems, such as marshlands and forests.
+   
+   - **Disaster Response:** During natural disasters, the classifier can identify affected terrain types, aiding in disaster response and recovery efforts.
+   
+   - **Ecological Research:** Researchers can employ the classifier for ecological studies to analyze terrain diversity and its impact on local ecosystems.
+   
+#### 3. Agriculture and Land Management
+
+   - **Precision Agriculture:** Farmers can make data-driven decisions by assessing soil types and choosing optimal crops for specific terrains.
+   
+   - **Land Development:** Urban planners and land developers can benefit from understanding the terrain for sustainable land use.
+   
+#### 4. Autonomous Vehicles
+
+   - **Navigation:** Autonomous vehicles, such as drones and self-driving cars, can use terrain classification for safe and efficient navigation.
+   
+   - **Obstacle Avoidance:** Identifying rough or impassable terrains helps autonomous vehicles avoid obstacles and hazards.
+   
+#### 5. Geographic Information Systems (GIS)
+
+   - **Map Creation:** The classifier contributes to the creation of detailed maps by categorizing terrains accurately.
+   
+   - **Geospatial Analysis:** Geospatial analysts can integrate terrain data for comprehensive geospatial analysis.
+   
+These applications demonstrate the broad utility of the EarthFinesse Military Terrain Classifier in various fields, enhancing decision-making and resource optimization.
 
 ## Contributing
 
-If you'd like to contribute to the EarthFinesse Terrain Recognition Engine or have suggestions for improvement, please follow these steps:
-
-1. **Fork the Repository**: Fork this repository to your GitHub account.
-
-2. **Create a New Branch**: Create a new branch for your feature or bug fix.
-
-3. **Make Your Changes**: Implement your changes and thoroughly test them.
-
-4. **Create a Pull Request**: Create a pull request with a clear description of your changes and their significance.
-
-We welcome contributions and appreciate your help in advancing this terrain recognition engine.
+We welcome contributions from the community! If you'd like to contribute to this project, please review our [contribution guidelines](CONTRIBUTING.md).
 
 ## License
 
-This project is licensed under the MIT License. Feel free to use and modify the code for your projects.
+This project is licensed under the [MIT License](LICENSE).
