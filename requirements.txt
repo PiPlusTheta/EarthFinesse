@@ -1,0 +1,11 @@
+numpy
+pandas
+matplotlib
+tensorflow
+scikit-learn
+streamlit
+Pillow
+opencv-python-headless
+datetime
+fpdf
+base64
