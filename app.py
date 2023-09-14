@@ -10,26 +10,20 @@ from fpdf import FPDF
 import pandas as pd
 import base64
 
-# Create a folder to store PDF reports
 pdf_reports_folder = "pdf_reports"
 os.makedirs(pdf_reports_folder, exist_ok=True)
 
-# Create a folder to store temporary images
 temp_images_folder = "temp_images"
 os.makedirs(temp_images_folder, exist_ok=True)
 
-# Load model
 model = load_model('terrain__2023_09_13__11_52_06___Accuracy_0.9787.h5')
 
-# Class labels
 label_map = {0: 'Grassy', 1: 'Marshy', 2: 'Rocky', 3: 'Sandy'}
 
-# Define military camo theme colors
-bg_color = "#383838"  # Dark background
-text_color = "#FFFFFF"  # White text
-accent_color = "#4CAF50"  # Military green accent color
+bg_color = "#383838"  
+text_color = "#FFFFFF"  
+accent_color = "#4CAF50"  
 
-# Apply the theme
 st.markdown(
     f"""
     <style>
@@ -51,21 +45,26 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+hide_streamlit_style = """
+            <style>
+            #MainMenu {visibility: hidden;}
+            footer {visibility: hidden;}
+            </style>
+            """
+st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
 class PDF(FPDF):
     def header(self):
-        # Add a border to the header of each page
         self.rect(5.0, 5.0, 200.0, 15.0)
         self.set_font('Arial', 'B', 12)
         self.cell(0, 10, "EarthFinesse Military Terrain Classification Report", ln=True, align="C")
-        self.cell(0, 10, "", ln=True)  # Add an empty line
+        self.cell(0, 10, "", ln=True) 
 
     def footer(self):
-        # Add a border to the footer of each page
-        self.set_y(-15.0)
-        self.rect(5.0, 287.0, 200.0, 15.0)
+        self.set_y(-17.0)
+        self.rect(5.0, 278.0, 200.0, 15.0)
         self.set_font('Arial', 'I', 8)
-        self.cell(0, 10, f"Generated on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", 0, 1, 'C')
+        self.cell(0, 10, f"Generated on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", 0, 1, align='C')
 
 def generate_common_explanation(terrain):
     explanations = {
@@ -77,7 +76,6 @@ def generate_common_explanation(terrain):
 
         'Sandy': """The terrain classification as sandy is attributed to its predominant sandy composition. Sandy terrain lacks significant vegetation and is characterized by loose, granular soil. It is commonly found in desert regions, coastal dunes, or arid environments. Sandy terrain can present challenges for both mobility and concealment, as the loose sand can impede vehicle movement and leave conspicuous tracks. The model recognized these sandy characteristics, leading to the classification of sandy terrain. Military operations in sandy terrain often require specific equipment and strategies to address the unique challenges it poses.""",
 
-        # Add more terrain explanations here...
     }
     
     return explanations.get(terrain, "The terrain is classified as an unknown type.")
@@ -85,7 +83,6 @@ def generate_common_explanation(terrain):
 def classify_image(img):
     img = img.resize((224, 224))
     
-    # Ensure the image has 3 color channels (RGB)
     if img.mode == 'RGBA':
         img = img.convert('RGB')
     
@@ -117,7 +114,6 @@ def generate_pdf_report(df):
         confidence = row['Confidence']
         explanation = generate_common_explanation(terrain)
 
-        # Save the image to the temporary images folder in PNG format
         img_path = os.path.join(temp_images_folder, f"temp_image_{i}.png")
         img = Image.open(row['Image'])
         img.save(img_path, format="PNG")
@@ -128,7 +124,6 @@ def generate_pdf_report(df):
         pdf.cell(0, 10, f"Predicted Terrain Type: {terrain}", ln=True)
         pdf.cell(0, 10, f"Prediction Confidence: {confidence * 100:.2f}%", ln=True)
         
-        # Generate a common explanation for the terrain
         explanation = generate_common_explanation(terrain)
         pdf.multi_cell(0, 10, f"Terrain Explanation: {explanation}")
 
@@ -158,12 +153,11 @@ def main():
 
             terrain, confidence = classify_image(Image.open(file))
 
-            # Display the prediction and confidence score to the right of the image
             st.write("### Prediction:")
             st.write(f"🌲 Predicted Terrain Type: {terrain}")
-            st.write(f"🎯 Prediction Confidence: {confidence * 100:.2f}%")
+            if show_probabilities:
+                st.write(f"🎯 Prediction Confidence: {confidence * 100:.2f}%")
 
-            # Generate a common explanation for the terrain
             explanation = generate_common_explanation(terrain)
             st.write("### Terrain Explanation:")
             st.write(explanation)
