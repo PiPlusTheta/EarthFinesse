@@ -1,8 +1,8 @@
 # EarthFinesse: Military Terrain Classifier
 
-![GitHub stars](https://img.shields.io/github/stars/PiPlusTheta/EarthFinesse)
-![GitHub forks](https://img.shields.io/github/forks/PiPlusTheta/EarthFinesse)
-![GitHub license](https://img.shields.io/github/license/PiPlusTheta/EarthFinesse)
+[![GitHub stars](https://img.shields.io/github/stars/PiPlusTheta/EarthFinesse)](https://github.com/PiPlusTheta/EarthFinesse/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/PiPlusTheta/EarthFinesse)](https://github.com/PiPlusTheta/EarthFinesse/network/members)
+[![GitHub license](https://img.shields.io/github/license/PiPlusTheta/EarthFinesse)](https://github.com/PiPlusTheta/EarthFinesse/blob/main/LICENSE)
 
 EarthFinesse is a high-accuracy military terrain classifier powered by deep learning. It classifies terrain types such as Grassy, Marshy, Rocky, and Sandy with an accuracy of over 97.87%, setting a new benchmark in this domain. The model uses the MobileNetV2 architecture, optimized for efficient and accurate terrain classification.
 
