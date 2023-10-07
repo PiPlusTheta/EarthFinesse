@@ -91,7 +91,7 @@ The training data is augmented using techniques like shear, zoom, and horizontal
 
 #### MobileNetV2 Base Model
 
-https://production-media.paperswithcode.com/methods/Screen_Shot_2020-06-06_at_10.37.14_PM.png
+<img width="252" alt="Screen_Shot_2020-06-06_at_10 37 14_PM" src="https://github.com/PiPlusTheta/EarthFinesse/assets/68808227/e2766ee8-1442-4a9e-874b-cb9c772c621f">
 
 The MobileNetV2 architecture, pre-trained on ImageNet, is used as the base model for feature extraction. All base model layers are frozen to retain pre-trained knowledge.
 
